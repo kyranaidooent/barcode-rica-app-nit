@@ -1,0 +1,69 @@
+<main class="page">
+  <header class="page__header">
+    <h1>RICA SIM Registration</h1>
+    <p class="page__subtitle">
+      Scan the barcode on the SIM packaging, or type the number manually.
+    </p>
+  </header>
+
+  <section class="field-card">
+    <label for="simNumber" class="field-card__label">SIM number</label>
+
+    <div class="field-card__row">
+      <input
+        id="simNumber"
+        name="simNumber"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        class="field-card__input"
+        placeholder="e.g. 8960012345678901234"
+        [(ngModel)]="simNumber"
+      />
+
+      <button
+        type="button"
+        class="btn btn--icon"
+        (click)="openScanner()"
+        aria-label="Scan barcode"
+        title="Scan barcode"
+      >
+        <!-- simple inline barcode icon, no external asset needed -->
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="2" height="16"></rect>
+          <rect x="6" y="4" width="1" height="16"></rect>
+          <rect x="9" y="4" width="3" height="16"></rect>
+          <rect x="14" y="4" width="1" height="16"></rect>
+          <rect x="17" y="4" width="2" height="16"></rect>
+          <rect x="20" y="4" width="2" height="16"></rect>
+        </svg>
+      </button>
+
+      @if (simNumber) {
+        <button type="button" class="btn btn--ghost" (click)="clearField()">
+          Clear
+        </button>
+      }
+    </div>
+
+    @if (justScanned) {
+      <p class="field-card__hint field-card__hint--success">
+        Barcode scanned and field populated.
+      </p>
+    }
+
+    @if (lastScanRaw && lastScanRaw !== simNumber) {
+      <p class="field-card__hint">
+        Raw scanned value: <code>{{ lastScanRaw }}</code>
+        (non-numeric characters were stripped automatically)
+      </p>
+    }
+  </section>
+
+  @if (isScannerOpen) {
+    <app-barcode-scanner
+      (scannedNumber)="onBarcodeScannedNumber($event)"
+      (closed)="closeScanner()"
+    ></app-barcode-scanner>
+  }
+</main>

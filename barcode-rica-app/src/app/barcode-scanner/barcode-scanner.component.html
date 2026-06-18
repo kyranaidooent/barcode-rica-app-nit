@@ -1,0 +1,49 @@
+<div class="scanner-overlay" role="dialog" aria-modal="true" aria-label="Barcode scanner">
+  <div class="scanner-overlay__header">
+    <span>Scan barcode</span>
+    <button type="button" class="scanner-overlay__close" (click)="onClose()" aria-label="Close scanner">
+      ✕
+    </button>
+  </div>
+
+  <div class="scanner-overlay__viewport">
+    <video #videoElement class="scanner-overlay__video" muted playsinline></video>
+
+    @if (!errorMessage) {
+      <div class="scanner-overlay__frame">
+        <div class="scanner-overlay__corner scanner-overlay__corner--tl"></div>
+        <div class="scanner-overlay__corner scanner-overlay__corner--tr"></div>
+        <div class="scanner-overlay__corner scanner-overlay__corner--bl"></div>
+        <div class="scanner-overlay__corner scanner-overlay__corner--br"></div>
+      </div>
+    }
+
+    @if (isInitializing && !errorMessage) {
+      <div class="scanner-overlay__status">Starting camera…</div>
+    }
+
+    @if (errorMessage) {
+      <div class="scanner-overlay__error">
+        <p>{{ errorMessage }}</p>
+        <button type="button" class="btn-retry" (click)="onClose()">Close</button>
+      </div>
+    }
+  </div>
+
+  @if (!errorMessage) {
+    <p class="scanner-overlay__hint">Align the barcode within the frame</p>
+  }
+
+  <div class="scanner-overlay__controls">
+    @if (torchSupported) {
+      <button type="button" class="btn-control" (click)="toggleTorch()">
+        {{ torchOn ? 'Turn off torch' : 'Turn on torch' }}
+      </button>
+    }
+    @if (hasMultipleCameras) {
+      <button type="button" class="btn-control" (click)="switchCamera()">
+        Switch camera
+      </button>
+    }
+  </div>
+</div>
