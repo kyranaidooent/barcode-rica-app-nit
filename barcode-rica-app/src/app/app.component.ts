@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BarcodeScannerComponent } from './barcode-scanner/barcode-scanner.component';
@@ -11,31 +11,25 @@ import { BarcodeScannerComponent } from './barcode-scanner/barcode-scanner.compo
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  /** The value bound to the visible text input. */
-  simNumber = '';
-
-  /** Controls whether the scanner overlay is shown. */
-  isScannerOpen = false;
-
-  /** Last raw decoded barcode value, kept for an audit trail / debugging. */
-  lastScanRaw: string | null = null;
-
-  justScanned = false;
+  simNumber = signal('');
+  isScannerOpen = signal(false);
+  lastScanRaw = signal<string | null>(null);
+  justScanned = signal(false);
 
   openScanner(): void {
-    this.isScannerOpen = true;
+    this.isScannerOpen.set(true);
   }
 
   closeScanner(): void {
-    this.isScannerOpen = false;
+    this.isScannerOpen.set(false);
   }
 
   onBarcodeScannedNumber(rawValue: string): void {
-    this.lastScanRaw = rawValue;
-    this.simNumber = this.normalizeScannedValue(rawValue);
-    this.isScannerOpen = false;
-    this.justScanned = true;
-    setTimeout(() => (this.justScanned = false), 2500);
+    this.lastScanRaw.set(rawValue);
+    this.simNumber.set(this.normalizeScannedValue(rawValue));
+    this.isScannerOpen.set(false);
+    this.justScanned.set(true);
+    setTimeout(() => (this.justScanned.set(false)), 2500);
   }
 
   private normalizeScannedValue(raw: string): string {
@@ -43,7 +37,7 @@ export class AppComponent {
   }
 
   clearField(): void {
-    this.simNumber = '';
-    this.lastScanRaw = null;
+    this.simNumber.set('');
+    this.lastScanRaw.set(null);
   }
 }

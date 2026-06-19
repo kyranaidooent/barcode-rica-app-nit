@@ -4,9 +4,9 @@ import {
   ElementRef,
   EventEmitter,
   OnDestroy,
-  Output,
   ViewChild,
   NgZone,
+  output
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -23,10 +23,8 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('videoElement', { static: true })
   videoElementRef!: ElementRef<HTMLVideoElement>;
 
-  @Output() scannedNumber = new EventEmitter<string>();
-
-  /** Emits when the user dismisses the scanner without a successful scan. */
-  @Output() closed = new EventEmitter<void>();
+  scannedNumber = output<string>();
+  closed = output<void>();
 
   private reader: BrowserMultiFormatReader | null = null;
   private controls: { stop: () => void } | null = null;
@@ -61,11 +59,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Restrict decoding to formats actually used on SIM packaging / ID docs
-    // for a RICA flow. This narrows the search space and speeds up decode.
-    // Code 128 and EAN-13 cover most SIM/ICCID barcodes; PDF417 covers
-    // South African ID/driver's licence barcodes if you extend this to
-    // scan identity documents too.
     const hints = new Map();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, [
       BarcodeFormat.CODE_128,
@@ -116,8 +109,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
               this.scannedNumber.emit(result.getText());
             });
           }
-          // 'error' fires continuously while no barcode is in frame; that's
-          // expected ZXing behaviour, not a real failure, so it's ignored here.
         }
       );
 
@@ -125,7 +116,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
       this.checkTorchSupport();
       this.isInitializing = false;
 
-      // Keep a reference so we can stop it cleanly later.
       this.controls = controlsResult as { stop: () => void };
     } catch (err) {
       this.handleCameraError(err);
@@ -149,7 +139,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
         advanced: [{ torch: this.torchOn } as any],
       });
     } catch {
-      // Torch toggling isn't supported on every device; fail quietly.
       this.torchOn = false;
     }
   }
@@ -222,7 +211,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
     try {
       this.controls?.stop();
     } catch {
-      // no-op if controls were never set or are already stopped
     }
     this.controls = null;
     this.stopMediaTracks();

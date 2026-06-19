@@ -18,7 +18,8 @@
         autocomplete="off"
         class="field-card__input"
         placeholder="e.g. 8960012345678901234"
-        [(ngModel)]="simNumber"
+        [ngModel]="simNumber()"
+        (ngModelChange)="simNumber.set($event)"
       />
 
       <button
@@ -39,28 +40,28 @@
         </svg>
       </button>
 
-      @if (simNumber) {
+      @if (simNumber()) {
         <button type="button" class="btn btn--ghost" (click)="clearField()">
           Clear
         </button>
       }
     </div>
 
-    @if (justScanned) {
+    @if (justScanned()) {
       <p class="field-card__hint field-card__hint--success">
         Barcode scanned and field populated.
       </p>
     }
 
-    @if (lastScanRaw && lastScanRaw !== simNumber) {
+    @if (lastScanRaw() && lastScanRaw() !== simNumber()) {
       <p class="field-card__hint">
-        Raw scanned value: <code>{{ lastScanRaw }}</code>
+        Raw scanned value: <code>{{ lastScanRaw() }}</code>
         (non-numeric characters were stripped automatically)
       </p>
     }
   </section>
 
-  @if (isScannerOpen) {
+  @if (isScannerOpen()) {
     <app-barcode-scanner
       (scannedNumber)="onBarcodeScannedNumber($event)"
       (closed)="closeScanner()"
