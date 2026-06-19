@@ -136,9 +136,32 @@
 
 .scanner-overlay__controls {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   gap: 12px;
   padding: 0 16px 24px;
+}
+
+.camera-select-wrap {
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.camera-select {
+  min-width: 220px;
+  max-width: min(92vw, 360px);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.camera-select option {
+  color: #111827;
 }
 
 .btn-control {

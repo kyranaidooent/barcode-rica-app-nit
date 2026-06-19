@@ -29,9 +29,10 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
   @Output() closed = new EventEmitter<void>();
 
   private reader: BrowserMultiFormatReader | null = null;
+  private controls: { stop: () => void } | null = null;
   private activeStream: MediaStream | null = null;
-  private availableDevices: MediaDeviceInfo[] = [];
-  private currentDeviceId: string | null = null;
+  availableDevices: MediaDeviceInfo[] = [];
+  currentDeviceId: string | null = null;
 
   errorMessage: string | null = null;
   isInitializing = true;
@@ -39,7 +40,7 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
   torchSupported = false;
   torchOn = false;
 
-  constructor(private ngZone: NgZone) {}
+  constructor(private ngZone: NgZone) { }
 
   async ngAfterViewInit(): Promise<void> {
     await this.startScanning();
@@ -68,13 +69,9 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
     const hints = new Map();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, [
       BarcodeFormat.CODE_128,
-      BarcodeFormat.EAN_13,
-      BarcodeFormat.EAN_8,
-      BarcodeFormat.CODE_39,
-      BarcodeFormat.ITF,
-      BarcodeFormat.PDF_417,
-      BarcodeFormat.QR_CODE,
+      BarcodeFormat.CODE_39
     ]);
+    hints.set(DecodeHintType.TRY_HARDER, true);
 
     this.reader = new BrowserMultiFormatReader(hints, {
       delayBetweenScanAttempts: 150,
@@ -102,7 +99,12 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
 
     const constraints: MediaStreamConstraints = this.currentDeviceId
       ? { video: { deviceId: { exact: this.currentDeviceId } } }
-      : { video: { facingMode: 'environment' } };
+      : {
+        video: {
+          facingMode: 'environment',
+        },
+
+      };
 
     try {
       const controlsResult = await this.reader.decodeFromConstraints(
@@ -124,7 +126,7 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
       this.isInitializing = false;
 
       // Keep a reference so we can stop it cleanly later.
-      (this as any)._controls = controlsResult;
+      this.controls = controlsResult as { stop: () => void };
     } catch (err) {
       this.handleCameraError(err);
     }
@@ -160,9 +162,33 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
       (d) => d.deviceId === this.currentDeviceId
     );
     const nextIndex = (currentIndex + 1) % this.availableDevices.length;
-    this.currentDeviceId = this.availableDevices[nextIndex].deviceId;
+    await this.selectCamera(this.availableDevices[nextIndex].deviceId);
+  }
 
-    this.stopMediaTracks();
+  async onCameraSelectionChange(event: Event): Promise<void> {
+    const select = event.target as HTMLSelectElement | null;
+    const selectedDeviceId = select?.value;
+    if (!selectedDeviceId) {
+      return;
+    }
+
+    await this.selectCamera(selectedDeviceId);
+  }
+
+  getCameraLabel(device: MediaDeviceInfo, index: number): string {
+    const label = device.label?.trim();
+    return label || `Camera ${index + 1}`;
+  }
+
+  private async selectCamera(deviceId: string): Promise<void> {
+    if (this.currentDeviceId === deviceId) {
+      return;
+    }
+
+    this.currentDeviceId = deviceId;
+    this.torchOn = false;
+
+    this.stopActiveScanSession();
     this.isInitializing = true;
     await this.decodeFromCurrentDevice();
   }
@@ -192,13 +218,18 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
     this.activeStream = null;
   }
 
-  private stopScanning(): void {
+  private stopActiveScanSession(): void {
     try {
-      (this as any)._controls?.stop();
+      this.controls?.stop();
     } catch {
-      // no-op if controls were never set
+      // no-op if controls were never set or are already stopped
     }
+    this.controls = null;
     this.stopMediaTracks();
+  }
+
+  private stopScanning(): void {
+    this.stopActiveScanSession();
     this.reader = null;
   }
 

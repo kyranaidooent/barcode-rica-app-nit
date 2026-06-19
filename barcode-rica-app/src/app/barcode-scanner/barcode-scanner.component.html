@@ -1,13 +1,28 @@
-<div class="scanner-overlay" role="dialog" aria-modal="true" aria-label="Barcode scanner">
+<div
+  class="scanner-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Barcode scanner"
+>
   <div class="scanner-overlay__header">
     <span>Scan barcode</span>
-    <button type="button" class="scanner-overlay__close" (click)="onClose()" aria-label="Close scanner">
+    <button
+      type="button"
+      class="scanner-overlay__close"
+      (click)="onClose()"
+      aria-label="Close scanner"
+    >
       ✕
     </button>
   </div>
 
   <div class="scanner-overlay__viewport">
-    <video #videoElement class="scanner-overlay__video" muted playsinline></video>
+    <video
+      #videoElement
+      class="scanner-overlay__video"
+      muted
+      playsinline
+    ></video>
 
     @if (!errorMessage) {
       <div class="scanner-overlay__frame">
@@ -25,7 +40,9 @@
     @if (errorMessage) {
       <div class="scanner-overlay__error">
         <p>{{ errorMessage }}</p>
-        <button type="button" class="btn-retry" (click)="onClose()">Close</button>
+        <button type="button" class="btn-retry" (click)="onClose()">
+          Close
+        </button>
       </div>
     }
   </div>
@@ -35,9 +52,29 @@
   }
 
   <div class="scanner-overlay__controls">
+    @if (availableDevices.length > 0) {
+      <label class="camera-select-wrap" for="camera-select">Camera</label>
+      <select
+        id="camera-select"
+        class="camera-select"
+        [value]="currentDeviceId ?? ''"
+        (change)="onCameraSelectionChange($event)"
+      >
+        @for (
+          device of availableDevices;
+          track device.deviceId;
+          let i = $index
+        ) {
+          <option [value]="device.deviceId">
+            {{ getCameraLabel(device, i) }}
+          </option>
+        }
+      </select>
+    }
+
     @if (torchSupported) {
       <button type="button" class="btn-control" (click)="toggleTorch()">
-        {{ torchOn ? 'Turn off torch' : 'Turn on torch' }}
+        {{ torchOn ? "Turn off torch" : "Turn on torch" }}
       </button>
     }
     @if (hasMultipleCameras) {

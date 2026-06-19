@@ -64,7 +64,10 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "ssl": true
+            "ssl": false,
+            "allowedHosts": [
+              "all"
+            ]
           }
         }
       }
