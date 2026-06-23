@@ -52,32 +52,12 @@
   }
 
   <div class="scanner-overlay__controls">
-    @if (availableDevices.length > 0) {
-      <label class="camera-select-wrap" for="camera-select">Camera</label>
-      <select
-        id="camera-select"
-        class="camera-select"
-        [value]="currentDeviceId ?? ''"
-        (change)="onCameraSelectionChange($event)"
-      >
-        @for (
-          device of availableDevices;
-          track device.deviceId;
-          let i = $index
-        ) {
-          <option [value]="device.deviceId">
-            {{ getCameraLabel(device, i) }}
-          </option>
-        }
-      </select>
-    }
-
     @if (torchSupported) {
       <button type="button" class="btn-control" (click)="toggleTorch()">
         {{ torchOn ? "Turn off torch" : "Turn on torch" }}
       </button>
     }
-    @if (hasMultipleCameras) {
+    @if (availableDevices.length > 1) {
       <button type="button" class="btn-control" (click)="switchCamera()">
         Switch camera
       </button>

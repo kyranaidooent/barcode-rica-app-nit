@@ -2,11 +2,10 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  EventEmitter,
   OnDestroy,
   ViewChild,
   NgZone,
-  output
+  output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -34,7 +33,6 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
 
   errorMessage: string | null = null;
   isInitializing = true;
-  hasMultipleCameras = false;
   torchSupported = false;
   torchOn = false;
 
@@ -49,7 +47,7 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
   }
 
   private async startScanning(): Promise<void> {
-    this.isInitializing = true;
+        this.isInitializing = true;
     this.errorMessage = null;
 
     if (!('mediaDevices' in navigator) || !navigator.mediaDevices?.getUserMedia) {
@@ -72,13 +70,10 @@ export class BarcodeScannerComponent implements AfterViewInit, OnDestroy {
 
     try {
       this.availableDevices = await BrowserMultiFormatReader.listVideoInputDevices();
-      this.hasMultipleCameras = this.availableDevices.length > 1;
-
       const rearCamera = this.availableDevices.find((d) =>
         /back|rear|environment/i.test(d.label)
       );
       this.currentDeviceId = rearCamera?.deviceId ?? this.availableDevices[0]?.deviceId ?? null;
-
       await this.decodeFromCurrentDevice();
     } catch (err) {
       this.handleCameraError(err);
